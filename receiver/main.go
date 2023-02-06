@@ -9,9 +9,8 @@ import (
 )
 
 func main() {
-	//init websocket connection
 	conn := initConnectionToBroker()
-	handler := &client{conn: *conn}
+	handler := &handler{conn: *conn}
 
 	setupRoutes(handler)
 	log.Fatal(http.ListenAndServe(":8000", nil))
@@ -30,8 +29,6 @@ func initConnectionToBroker() *evtwebsocket.Conn {
 		},
 	}
 	// Connect
-	// Dial sets up the connection with the remote
-	// host provided in the url parameter.
 	err := c.Dial("ws://localhost:8001/ws", "")
 	if err != nil {
 		log.Fatal(err)
@@ -39,15 +36,15 @@ func initConnectionToBroker() *evtwebsocket.Conn {
 	return &c
 }
 
-func setupRoutes(ws *client) {
-	http.HandleFunc("/message", ws.produce)
+func setupRoutes(ws *handler) {
+	http.HandleFunc("/message", ws.receiveHandler)
 }
 
-type client struct {
+type handler struct {
 	conn evtwebsocket.Conn
 }
 
-func (ws *client) produce(w http.ResponseWriter, r *http.Request) {
+func (h *handler) receiveHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		byteArr, err := io.ReadAll(r.Body)
 		if err != nil {
@@ -55,7 +52,7 @@ func (ws *client) produce(w http.ResponseWriter, r *http.Request) {
 				http.StatusBadRequest)
 		}
 
-		err = ws.send(byteArr)
+		err = h.send(byteArr)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -69,13 +66,10 @@ func (ws *client) produce(w http.ResponseWriter, r *http.Request) {
 }
 
 // Send sends a message through the connection.
-func (ws *client) send(byteArr []byte) error {
+func (h *handler) send(byteArr []byte) error {
 	msg := evtwebsocket.Msg{
 		Body: byteArr,
-		Callback: func(resp []byte, conn *evtwebsocket.Conn) {
-			fmt.Printf("Got response: %s\n", resp)
-		},
 	}
 
-	return ws.conn.Send(msg)
+	return h.conn.Send(msg)
 }
