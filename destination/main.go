@@ -22,8 +22,7 @@ func setupRoutes() {
 }
 
 func wsEndpoint(w http.ResponseWriter, r *http.Request) {
-	// upgrade this connection to a WebSocket
-	// connection
+	// upgrade this connection to a WebSocket connection
 	ws, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -41,8 +40,8 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 // Listening on the connection continuously
 func listen(conn *websocket.Conn) {
-	var count int
-	var volume int
+	var messageCount int
+	var messageVolume int
 	for {
 		// read in a message
 		_, p, err := conn.ReadMessage()
@@ -51,9 +50,9 @@ func listen(conn *websocket.Conn) {
 			return
 		}
 
-		count += 1
-		volume += len(p)
-		log.Printf("count: %v volume: %v\n", count, volume)
+		messageCount += 1
+		messageVolume += len(p)
+		log.Printf("messageCount: %v messageVolume: %v\n", messageCount, messageVolume)
 	}
 
 }
