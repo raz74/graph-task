@@ -15,7 +15,6 @@ var upgrade = websocket.Upgrader{
 }
 
 func main() {
-	//init websocket connection
 	conn := initConnectionToDestination()
 	handler := &handler{conn: *conn}
 
@@ -54,8 +53,7 @@ type handler struct {
 }
 
 func (h *handler) wsEndpoint(w http.ResponseWriter, r *http.Request) {
-	// upgrade this connection to a WebSocket
-	// connection
+	// upgrade this connection to a WebSocket connection
 	ws, err := upgrade.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
@@ -82,9 +80,6 @@ func (h *handler) listen(conn *websocket.Conn) {
 		}
 		// print out that message for clarity
 		log.Println(string(p))
-
-		//response message
-
 		err = h.send(p)
 
 	}
