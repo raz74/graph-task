@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"time"
 )
 
 var upgrade = websocket.Upgrader{
@@ -42,6 +43,14 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 func listen(conn *websocket.Conn) {
 	var messageCount int
 	var messageVolume int
+
+	go func() {
+		for {
+			time.Sleep(time.Second)
+			printStats(messageCount, messageVolume)
+		}
+	}()
+
 	for {
 		// read in a message
 		_, p, err := conn.ReadMessage()
@@ -52,7 +61,9 @@ func listen(conn *websocket.Conn) {
 
 		messageCount += 1
 		messageVolume += len(p)
-		log.Printf("messageCount: %v messageVolume: %v\n", messageCount, messageVolume)
 	}
+}
 
+func printStats(count, volume int) {
+	log.Printf("messageCount: %d messageVolume: %d\n", count, volume)
 }
