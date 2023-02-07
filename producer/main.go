@@ -6,23 +6,30 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
-	"time"
+	"sync"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 const receiverUrl = "http://localhost:8000/message"
 
 func main() {
-	for i := 0; i < 10000; i++ {
+	var wg sync.WaitGroup
+	n := 10000
+	wg.Add(n)
+	for i := 0; i < n; i++ {
+
 		length := rand.Intn(8000-50) + 50
 		s := RandStringBytes(length)
-		go sendRequest(s)
+		go func() {
+			sendRequest(s)
+			wg.Done()
+		}()
 	}
-
-	time.Sleep(time.Second * 10)
+	wg.Wait()
 }
 
 func sendRequest(s string) {
+
 	request, err := http.NewRequest("POST", receiverUrl, bytes.NewBuffer([]byte(s)))
 	if err != nil {
 		panic(err)
