@@ -28,7 +28,7 @@ func initConnectionToDestination() *evtwebsocket.Conn {
 			fmt.Println("Connected")
 		},
 		OnMessage: func(msg []byte, conn *evtwebsocket.Conn) {
-			fmt.Printf("Received producer: %s\n", msg)
+			fmt.Printf("Received sender: %s\n", msg)
 		},
 		OnError: func(err error) {
 			fmt.Printf("** ERROR **\n%s\n", err.Error())
