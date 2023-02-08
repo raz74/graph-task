@@ -6,6 +6,7 @@ import (
 	"github.com/rgamba/evtwebsocket"
 	"log"
 	"net/http"
+	"time"
 )
 
 var upgrade = websocket.Upgrader{
@@ -71,17 +72,32 @@ func (h *handler) wsEndpoint(w http.ResponseWriter, r *http.Request) {
 
 // Listening on the connection continuously
 func (h *handler) listen(conn *websocket.Conn) {
+	var buffer string
+
+	go func() {
+		for {
+			time.Sleep(time.Second)
+			fmt.Print(buffer)
+			buffer = ""
+		}
+	}()
+
 	for {
-		// read in a message
 		_, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
-			return
+			continue
 		}
-		// print out that message for clarity
-		log.Println(string(p))
-		err = h.send(p)
 
+		go func() {
+			msg := string(p)
+			buffer += msg + "\n"
+
+			err = h.send(p)
+			if err != nil {
+				log.Println(err)
+			}
+		}()
 	}
 }
 
